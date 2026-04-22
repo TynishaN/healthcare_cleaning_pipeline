@@ -1,0 +1,26 @@
+{
+    "id": "A4E31E5D",
+    "path": "~/GitHub/healthcare_pipeline/outputs/near_duplicate_names.csv",
+    "project_path": "outputs/near_duplicate_names.csv",
+    "type": "text",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1776870079590.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "0,15",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1776869878,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1776869878,
+    "read_only": false,
+    "read_only_alternatives": []
+}

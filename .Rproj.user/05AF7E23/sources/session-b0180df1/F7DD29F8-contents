@@ -1,0 +1,46 @@
+
+===== DATA DIAGNOSTICS =====
+
+Row count: 1000
+Column count: 10
+
+--- Missing Values Summary ---
+                     Variable Missing_Count Missing_Percent
+Patient.Name     Patient.Name             0             0.0
+Age                       Age           159            15.9
+Gender                 Gender             0             0.0
+Condition           Condition             0             0.0
+Medication         Medication             0             0.0
+Visit.Date         Visit.Date             0             0.0
+Blood.Pressure Blood.Pressure           166            16.6
+Cholesterol       Cholesterol           231            23.1
+Email                   Email           384            38.4
+Phone.Number     Phone.Number           179            17.9
+
+
+--- Duplicate Rows ---
+
+Number of duplicate rows: 0
+
+--- Unique Patient Names ---
+
+Number of unique patient names: 10
+
+--- Near Duplicate Names ---
+
+Near duplicate pairs: 0
+
+--- Gender Values ---
+[1] "Other"  "Male"   "Female"
+
+
+--- Diagnosis Values ---
+[1] "Heart Disease" "Diabetes"      "Asthma"        "Hypertension"  "None"         
+
+
+--- Visit Date Summary ---
+   Length     Class      Mode 
+     1000 character character 
+
+
+--- Creating Missingness Plot ---

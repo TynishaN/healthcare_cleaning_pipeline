@@ -1,0 +1,24 @@
+{
+    "id": "6841890A",
+    "path": "~/GitHub/healthcare_pipeline/outputs/diagnosis_unique_values.csv",
+    "project_path": "outputs/diagnosis_unique_values.csv",
+    "type": "text",
+    "hash": "2658040671",
+    "contents": "",
+    "dirty": false,
+    "created": 1776870288611.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1776869878,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1776869878,
+    "read_only": false,
+    "read_only_alternatives": []
+}
