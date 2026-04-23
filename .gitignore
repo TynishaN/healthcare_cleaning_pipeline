@@ -6,6 +6,10 @@
 # Output logs
 *.log
 
+#Temporary word files
+~$*.docx
+
 # OS files
 .DS_Store
 Thumbs.db
+
