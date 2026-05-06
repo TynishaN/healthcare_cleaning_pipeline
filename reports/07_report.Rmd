@@ -1,0 +1,121 @@
+---
+title: "Healthcare Data Cleaning Report"
+author: "Tynisha Niles"
+date: "2026-05-06"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(here)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+```
+
+# 1. Dataset Overview
+
+```{r}
+data_raw <- readRDS(here("data","interim","data_ingested.rds"))
+data_clean <- readRDS(here("data","processed","data_cleaned.rds"))
+
+cat("Raw Data:\n")
+cat("Rows:", nrow(data_raw), " Columns:", ncol(data_raw), "\n\n")
+
+cat("Cleaned Data:\n")
+cat("Rows:", nrow(data_clean), " Columns:", ncol(data_clean), "\n")
+```
+
+# 2. Data Quality Diagnostics (Before Cleaning)
+
+```{r}
+missing_before <- colSums(is.na(data_raw))
+missing_before
+```
+
+# 3. Cleaning Decisions
+
+The following cleaning steps were applied:
+
+- Patient names standardised (lowercase, punctuation removed)
+- Gender, Condition, Medication normalised
+- Visit dates parsed into proper date format
+- Phone numbers cleaned (digits only, blanks converted to NA)
+- Age cleaned (text → numeric, missing values replaced with median)
+- Duplicate patient records resolved using Patient Name + Visit Date
+
+# 4. Imputation Applied
+
+- Variable: Age  
+- Method: Median imputation  
+- Reason: Median reduces impact of outliers  
+
+# 5. Post-Cleaning Summary
+
+```{r}
+summary(data_clean)
+```
+
+```{r}
+missing_after <- colSums(is.na(data_clean))
+missing_after
+```
+
+# 6. Charts
+
+## 6.1 Missingness Before vs After
+
+```{r}
+missing_df <- data.frame(
+  Variable = names(data_raw),
+  Before = colSums(is.na(data_raw)),
+  After = colSums(is.na(data_clean))
+)
+
+missing_long <- reshape2::melt(missing_df, id.vars="Variable")
+
+ggplot(missing_long, aes(x=Variable, y=value, fill=variable)) +
+  geom_bar(stat="identity", position="dodge") +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(title="Missingness Before vs After Cleaning")
+```
+
+## 6.2 Age Distribution
+
+```{r}
+ggplot(data_clean, aes(x=Age)) +
+  geom_histogram(bins=10) +
+  labs(title="Age Distribution")
+```
+
+## 6.3 Age Density
+
+```{r}
+ggplot(data_clean, aes(x=Age)) +
+  geom_density() +
+  labs(title="Age Density After Cleaning")
+```
+
+## 6.4 Condition Distribution
+
+```{r}
+ggplot(data_clean, aes(x=Condition)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(title="Condition Frequency")
+```
+
+# 7. Limitations
+
+- Some missing phone numbers remain  
+- Median imputation may not reflect true values  
+- Duplicate detection may not capture all cases  
+
+# 8. Conclusion
+
+The dataset has been cleaned and standardised and is ready for analysis.

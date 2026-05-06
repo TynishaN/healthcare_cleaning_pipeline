@@ -10,7 +10,10 @@ library(here)
 
 cat("\n===== PIPELINE STARTED =====\n")
 
-#load config
+# =====================================
+# Load configuration
+# =====================================
+
 source(
   here(
     "config",
@@ -18,8 +21,10 @@ source(
   )
 )
 
-
+# =====================================
 # Run ingestion stage
+# =====================================
+
 source(
   here(
     "scripts",
@@ -27,7 +32,10 @@ source(
   )
 )
 
+# =====================================
 # Run diagnostic stage
+# =====================================
+
 source(
   here(
     "scripts",
@@ -35,4 +43,66 @@ source(
   )
 )
 
+# =====================================
+# Run cleaning stage
+# =====================================
+
+source(
+  here(
+    "scripts",
+    "03_clean.R"
+  )
+)
+
+# =====================================
+# Run impute stage
+# =====================================
+
+source(
+  here(
+    "scripts",
+    "04_impute.R"
+  )
+)
+
+# =====================================
+# Run Dictionary
+# =====================================
+
+source(
+  here(
+    "scripts",
+    "05_dictionary.R"
+  )
+)
+# =====================================
+# Run Export
+# =====================================
+
+source(
+  here(
+    "scripts",
+    "06_export.R"
+  )
+)
+
+# =====================================
+# Run Automated Report
+# =====================================
+
+rmarkdown::render(
+  here("reports","07_report.Rmd")
+)
+
 cat("\n===== PIPELINE COMPLETED =====\n")
+
+
+data_final <- readRDS("data/processed/data_cleaned.rds")
+nrow(data_final)
+ncol(data_final)
+
+colSums(is.na(data_final))
+
+unique(data_final$Gender)
+unique(data_final$Condition)
+unique(data_final$Medication)

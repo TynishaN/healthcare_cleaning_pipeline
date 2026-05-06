@@ -31,6 +31,12 @@ interim_data_path <- here(
   "interim"
 )
 
+#Processed data storage
+processed_data_path <- here(
+  "data", 
+  "processed"
+)
+
 # Output files directory
 output_path <- here(
   "outputs"
