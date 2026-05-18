@@ -16,6 +16,7 @@ library(dplyr)
 library(stringr)
 library(lubridate)
 library(stringdist)
+library(tibble)
 
 # ==========================================================
 # Load configuration settings
@@ -30,9 +31,9 @@ source(
 
 cat("\n--- CLEANING STAGE STARTED ---\n")
 
-# -----------------------------
-# Load Diagnosed Dataset
-# -----------------------------
+# ==========================================================
+# LOAD DIAGNOSED DATASET
+# ==========================================================
 
 data <- readRDS(
   file.path(
@@ -46,9 +47,9 @@ cat(
   nrow(data)
 )
 
-# ==========================================
+# ==========================================================
 # STEP 1: PATIENT IDENTIFIER CONSISTENCY
-# ==========================================
+# ==========================================================
 
 data <- data %>%
   mutate(
@@ -60,41 +61,39 @@ data <- data %>%
       str_replace_all("[[:punct:]]", "")
   )
 
-# ==========================================
+# ==========================================================
 # STEP 2: CATEGORICAL NORMALISATION
-# ==========================================
-
-# ---- Gender ----
-
-# ==========================================
-# STEP 2: CATEGORICAL NORMALISATION
-# ==========================================
+# ==========================================================
 
 data <- data %>%
   mutate(
+    
     # ---- Gender ----
+    
     Gender = tolower(Gender),
     
     Gender = case_when(
-      Gender %in% c("m","male") ~ "Male",
-      Gender %in% c("f","female") ~ "Female",
-      Gender %in% c("other","o") ~ "Other",
+      Gender %in% c("m", "male") ~ "Male",
+      Gender %in% c("f", "female") ~ "Female",
+      Gender %in% c("other", "o") ~ "Other",
       TRUE ~ Gender
     ),
     
     # ---- Condition ----
+    
     Condition = str_trim(Condition),
     Condition = str_to_title(Condition),
     
     # ---- Medication ----
+    
     Medication = str_to_title(
       tolower(Medication)
     )
   )
 
-# ==========================================
-# STEP 3: DIAGNOSIS NORMALISATION
-# ==========================================
+# ==========================================================
+# STEP 3: CONDITION NORMALISATION
+# ==========================================================
 
 data <- data %>%
   mutate(
@@ -105,13 +104,18 @@ data <- data %>%
       Condition == "diabetes" ~ "Diabetes",
       Condition == "asthma" ~ "Asthma",
       Condition == "hypertension" ~ "Hypertension",
-      Condition %in% c("none", "no condition", "") ~ "None",
+      Condition %in% c(
+        "none",
+        "no condition",
+        ""
+      ) ~ "None",
       TRUE ~ str_to_title(Condition)
     )
   )
-# ==========================================
-# STEP 3: DATE PARSING
-# ==========================================
+
+# ==========================================================
+# STEP 4: DATE PARSING
+# ==========================================================
 
 data <- data %>%
   mutate(
@@ -129,9 +133,9 @@ data <- data %>%
       )
   )
 
-# ==========================================
-# STEP 4: PHONE STANDARDISATION
-# ==========================================
+# ==========================================================
+# STEP 5: PHONE STANDARDISATION
+# ==========================================================
 
 data <- data %>%
   mutate(
@@ -153,14 +157,17 @@ data <- data %>%
       ""
     )
   )
-# ==========================================
-# STEP 5: AGE CLEANING
-# ==========================================
+
+# ==========================================================
+# STEP 6: AGE CLEANING
+# ==========================================================
 
 data$Age <- as.character(data$Age)
 
 # Convert word ages to numbers
+
 data$Age <- case_when(
+  
   tolower(data$Age) == "forty" ~ "40",
   tolower(data$Age) == "thirty" ~ "30",
   tolower(data$Age) == "twenty" ~ "20",
@@ -176,12 +183,12 @@ data$Age <- case_when(
 )
 
 # Convert to numeric
+
 data$Age <- as.numeric(data$Age)
 
-
-# ==========================================
-# STEP 6: DETECT NEAR-DUPLICATE NAMES
-# ==========================================
+# ==========================================================
+# STEP 7: DETECT NEAR-DUPLICATE NAMES
+# ==========================================================
 
 name_vector <- data$`Patient.Name`
 
@@ -201,15 +208,17 @@ duplicate_flags <- apply(
 data$possible_duplicate_name <-
   duplicate_flags
 
-# ==========================================
-# STEP 7: RESOLVE IDENTITY CONFLICTS
-# (Same Name + Same Visit Date)
-# ==========================================
+# ==========================================================
+# STEP 8: RESOLVE IDENTITY CONFLICTS
+# ==========================================================
 
 data <- data %>%
-  group_by(`Patient.Name`,
-           `Visit.Date`) %>%
+  group_by(
+    `Patient.Name`,
+    `Visit.Date`
+  ) %>%
   mutate(
+    
     gender_count =
       n_distinct(Gender),
     
@@ -220,37 +229,145 @@ data <- data %>%
       n_distinct(`Phone.Number`)
   )
 
+# ==========================================================
+# STEP 9: REMOVE DUPLICATE VISITS
+# ==========================================================
+
+# Flag duplicate patient visits
+
+data <- data %>%
+  mutate(
+    duplicate_visit =
+      duplicated(
+        paste(
+          `Patient.Name`,
+          `Visit.Date`
+        )
+      )
+  )
+
+# Count duplicates before removal
+
+duplicates_removed <- sum(
+  data$duplicate_visit,
+  na.rm = TRUE
+)
+
+# Remove duplicate visit records
+
 data_clean <- data %>%
-  group_by(`Patient.Name`,
-           `Visit.Date`) %>%
-  slice(1) %>%
+  filter(!duplicate_visit) %>%
   ungroup()
 
-
-# ==========================================
-# STEP 8: REMOVE EXACT DUPLICATES
-# ==========================================
+# ==========================================================
+# STEP 10: REMOVE EXACT DUPLICATES
+# ==========================================================
 
 data_clean <- data_clean %>%
   distinct()
 
-# Remove helper columns
+# ==========================================================
+# REMOVE HELPER COLUMNS
+# ==========================================================
 
 data_clean <- data_clean %>%
   select(
     -gender_count,
     -age_count,
     -phone_count,
-    -possible_duplicate_name
+    -possible_duplicate_name,
+    -duplicate_visit
   )
+
 cat(
   "\nRows after deduplication:",
   nrow(data_clean)
 )
 
-# ==========================================
+cat(
+  "\nDuplicate visits removed:",
+  duplicates_removed
+)
+
+# ==========================================================
+# CLEANING AUDIT LOG
+# ==========================================================
+
+row_log <- tibble(
+  
+  stage = c(
+    "Raw Dataset",
+    "After Cleaning"
+  ),
+  
+  rows = c(
+    nrow(data),
+    nrow(data_clean)
+  )
+)
+
+saveRDS(
+  row_log,
+  file.path(
+    interim_data_path,
+    "row_log.rds"
+  )
+)
+
+# ==========================================================
+# DUPLICATE SUMMARY EXPORT
+# ==========================================================
+
+duplicate_summary <- tibble(
+  
+  total_rows_before = nrow(data),
+  
+  total_rows_after = nrow(data_clean),
+  
+  duplicates_removed =
+    duplicates_removed
+)
+
+write.csv(
+  duplicate_summary,
+  file.path(
+    output_path,
+    "duplicate_summary.csv"
+  ),
+  row.names = FALSE
+)
+
+# ==========================================================
+# VALIDATION CHECKS
+# ==========================================================
+
+if(nrow(data_clean) == 0) {
+  
+  stop(
+    "Cleaning process removed all rows."
+  )
+}
+
+if(any(is.na(data_clean$`Visit.Date`))) {
+  
+  warning(
+    "Some Visit.Date values failed parsing."
+  )
+}
+
+if(any(
+  data_clean$Age < 0,
+  na.rm = TRUE
+)) {
+  
+  warning(
+    "Negative age values detected."
+  )
+}
+
+# ==========================================================
 # SAVE CLEANED DATA
-# ==========================================
+# ==========================================================
 
 saveRDS(
   data_clean,
@@ -261,4 +378,3 @@ saveRDS(
 )
 
 cat("\n--- CLEANING STAGE COMPLETED ---\n")
-

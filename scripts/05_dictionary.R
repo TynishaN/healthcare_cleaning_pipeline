@@ -1,19 +1,21 @@
 # ==========================================================
 # DATA DICTIONARY SCRIPT
-# File: scripts/04_dictionary.R
+# File: scripts/05_dictionary.R
+#
 # Purpose:
 # Generates a complete data dictionary including:
-# variable name, type, labels, valid values,
-# missingness (before and after cleaning),
-# imputation treatment, and notes.
+# variable name, data type, labels,
+# valid values, missingness before and after
+# cleaning, imputation treatment, and notes.
 # ==========================================================
 
 library(here)
 library(dplyr)
+library(tibble)
 
-# -----------------------------
-# Load configuration
-# -----------------------------
+# ==========================================================
+# LOAD CONFIGURATION
+# ==========================================================
 
 source(
   here(
@@ -24,11 +26,12 @@ source(
 
 cat("\n--- DATA DICTIONARY STAGE STARTED ---\n")
 
-# -----------------------------
-# Load Datasets
-# -----------------------------
+# ==========================================================
+# LOAD DATASETS
+# ==========================================================
 
-# Raw dataset (BEFORE cleaning)
+# Raw dataset (before cleaning)
+
 data_raw <- readRDS(
   file.path(
     interim_data_path,
@@ -36,7 +39,8 @@ data_raw <- readRDS(
   )
 )
 
-# Cleaned dataset (AFTER cleaning)
+# Final cleaned dataset (after imputation)
+
 data_cleaned <- readRDS(
   file.path(
     processed_data_path,
@@ -44,102 +48,210 @@ data_cleaned <- readRDS(
   )
 )
 
-# -----------------------------
-# Build Data Dictionary
-# -----------------------------
-
-data_dictionary <- data.frame(
-  
-  # Variable name
-  Variable_Name = names(data_cleaned),
-  
-  # Data type
-  Data_Type = sapply(
-    data_cleaned, function(x)
-    class(x)[1]
-  ),
-  
-  # Missing % BEFORE cleaning
-  Missing_Percent_Raw = round(
-    colSums(is.na(data_raw)) /
-      nrow(data_raw) * 100,
-    2
-  ),
-  
-  # Missing % AFTER cleaning
-  Missing_Percent_Cleaned = round(
-    colSums(is.na(data_cleaned)) /
-      nrow(data_cleaned) * 100,
-    2
-  ),
-  
-  # Required fields (to be filled / partially defined)
-  Label = "",
-  Valid_Values = "",
-  Imputation = "",
-  Notes = ""
+cat(
+  "\nVariables in cleaned dataset:",
+  ncol(data_cleaned)
 )
 
-# -----------------------------
-# OPTIONAL: Add Manual Definitions
-# (Recommended for key variables)
-# -----------------------------
+# ==========================================================
+# BUILD DATA DICTIONARY
+# ==========================================================
 
-data_dictionary$Label[
-  data_dictionary$Variable_Name == "Age"
-] <- "Patient age in years"
+# Create raw missingness vector aligned
+# to cleaned dataset variables
 
-data_dictionary$Valid_Values[
-  data_dictionary$Variable_Name == "Age"
-] <- "0–120"
+missing_raw <- sapply(
+  names(data_cleaned),
+  function(var) {
+    
+    if(var %in% names(data_raw)) {
+      
+      round(
+        sum(is.na(data_raw[[var]])) /
+          nrow(data_raw) * 100,
+        2
+      )
+      
+    } else {
+      
+      NA
+    }
+  }
+)
 
-data_dictionary$Imputation[
-  data_dictionary$Variable_Name == "Age"
-] <- "Median imputation"
+# Create cleaned missingness vector
 
-data_dictionary$Notes[
-  data_dictionary$Variable_Name == "Age"
-] <- "Converted from text where necessary"
+missing_cleaned <- sapply(
+  names(data_cleaned),
+  function(var) {
+    
+    round(
+      sum(is.na(data_cleaned[[var]])) /
+        nrow(data_cleaned) * 100,
+      2
+    )
+  }
+)
 
-data_dictionary$Label[
-  data_dictionary$Variable_Name == "Gender"
-] <- "Patient gender"
+# Build dictionary dynamically
 
-data_dictionary$Valid_Values[
-  data_dictionary$Variable_Name == "Gender"
-] <- "Male, Female, Other"
+data_dictionary <- tibble(
+  
+  Variable_Name =
+    names(data_cleaned),
+  
+  Data_Type =
+    sapply(
+      data_cleaned,
+      function(x)
+        class(x)[1]
+    ),
+  
+  Missing_Percent_Raw =
+    missing_raw,
+  
+  Missing_Percent_Cleaned =
+    missing_cleaned
+)
 
-data_dictionary$Notes[
-  data_dictionary$Variable_Name == "Gender"
-] <- "Standardised values"
+# ==========================================================
+# ADD METADATA FIELDS
+# ==========================================================
 
-data_dictionary$Label[
-  data_dictionary$Variable_Name == "Condition"
-] <- "Patient medical condition"
+data_dictionary <- data_dictionary %>%
+  
+  mutate(
+    
+    Label = case_when(
+      
+      Variable_Name == "Patient.Name"
+      ~ "Patient Name",
+      
+      Variable_Name == "Gender"
+      ~ "Patient Gender",
+      
+      Variable_Name == "Condition"
+      ~ "Medical Condition",
+      
+      Variable_Name == "Medication"
+      ~ "Medication Name",
+      
+      Variable_Name == "Visit.Date"
+      ~ "Visit Date",
+      
+      Variable_Name == "Phone.Number"
+      ~ "Patient Contact Number",
+      
+      Variable_Name == "Age"
+      ~ "Patient Age",
+      
+      Variable_Name == "Blood.Pressure"
+      ~ "Blood Pressure Reading",
+      
+      Variable_Name == "Cholesterol"
+      ~ "Cholesterol Level",
+      
+      Variable_Name == "Email"
+      ~ "Patient Email Address",
+      
+      Variable_Name == "Age_Original"
+      ~ "Original Age Before Imputation",
+      
+      Variable_Name == "Age_Imputed_Flag"
+      ~ "Age Imputation Indicator",
+      
+      TRUE ~ Variable_Name
+    ),
+    
+    Valid_Values = case_when(
+      
+      Variable_Name == "Gender"
+      ~ "Male, Female, Other",
+      
+      Variable_Name == "Age"
+      ~ "0-120",
+      
+      Variable_Name == "Age_Imputed_Flag"
+      ~ "TRUE/FALSE",
+      
+      TRUE ~ "See dataset documentation"
+    ),
+    
+    Imputation = case_when(
+      
+      Variable_Name == "Age"
+      ~ "Median imputation",
+      
+      Variable_Name == "Age_Original"
+      ~ "Reference variable only",
+      
+      Variable_Name == "Age_Imputed_Flag"
+      ~ "Generated during imputation",
+      
+      TRUE ~ "None"
+    ),
+    
+    Notes = case_when(
+      
+      Variable_Name == "Patient.Name"
+      ~ "Names standardised and deduplicated",
+      
+      Variable_Name == "Gender"
+      ~ "Categorical values standardised",
+      
+      Variable_Name == "Condition"
+      ~ "Condition names normalised",
+      
+      Variable_Name == "Medication"
+      ~ "Medication names standardised",
+      
+      Variable_Name == "Visit.Date"
+      ~ "Parsed from multiple date formats",
+      
+      Variable_Name == "Phone.Number"
+      ~ "Non-digit characters removed",
+      
+      Variable_Name == "Age"
+      ~ "Text converted to numeric",
+      
+      Variable_Name == "Age_Original"
+      ~ "Stored for imputation comparison",
+      
+      Variable_Name == "Age_Imputed_Flag"
+      ~ "Indicates imputed observations",
+      
+      TRUE ~ ""
+    )
+  )
 
-data_dictionary$Notes[
-  data_dictionary$Variable_Name == "Condition"
-] <- "Normalised to consistent format"
+# ==========================================================
+# VALIDATION CHECKS
+# ==========================================================
 
-data_dictionary$Label[
-  data_dictionary$Variable_Name == "Phone.Number"
-] <- "Patient contact number"
+# Ensure dictionary rows match variables
 
-data_dictionary$Notes[
-  data_dictionary$Variable_Name == "Phone.Number"
-] <- "Non-digit characters removed"
+if(
+  nrow(data_dictionary) !=
+  ncol(data_cleaned)
+) {
+  
+  warning(
+    "Dictionary row count does not match dataset variables."
+  )
+}
 
-data_dictionary$Label[
-  data_dictionary$Variable_Name == "Visit.Date"
-] <- "Date of patient visit"
+# Ensure no blank labels remain
 
-data_dictionary$Notes[
-  data_dictionary$Variable_Name == "Visit.Date"
-] <- "Parsed from multiple formats"
+if(any(data_dictionary$Label == "")) {
+  
+  warning(
+    "Some variable labels are blank."
+  )
+}
 
-# -----------------------------
-# Save Dictionary
-# -----------------------------
+# ==========================================================
+# SAVE DATA DICTIONARY
+# ==========================================================
 
 write.csv(
   data_dictionary,
@@ -150,6 +262,12 @@ write.csv(
   row.names = FALSE
 )
 
-cat("\nData dictionary created successfully.")
+cat(
+  "\nData dictionary created successfully."
+)
+
+cat(
+  "\nDictionary saved to outputs folder."
+)
 
 cat("\n--- DATA DICTIONARY COMPLETED ---\n")

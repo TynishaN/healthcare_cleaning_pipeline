@@ -86,3 +86,4 @@ diagnostic_log_file <- here(
 # Jaro-Winkler distance
 
 name_distance_threshold <- 0.1
+

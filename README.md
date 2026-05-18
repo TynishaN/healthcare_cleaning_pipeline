@@ -1,17 +1,24 @@
-# healthcare_cleaning_pipeline
-Healthcare data cleaning pipeline
 # Healthcare Data Cleaning and Analysis Pipeline
 
 ## Overview
-This project is a structured data cleaning and analysis pipeline built in R for healthcare data. It automates the process of data ingestion, diagnostics, cleaning, imputation, dictionary generation, export, and reporting.
 
-The pipeline is designed for reproducibility and can be executed end-to-end using a single script or run step-by-step for debugging or inspection.
+This project is a structured healthcare data cleaning and analysis pipeline developed in R. The pipeline automates the process of:
+
+- data ingestion,
+- data diagnostics,
+- data cleaning,
+- missing value imputation,
+- data dictionary generation,
+- multi-format dataset export,
+- and automated reporting.
+
+The workflow is designed to support reproducibility, transparency, portability, and end-to-end execution using a single master script.
 
 ---
 
-## Pipeline Workflow
+# Pipeline Workflow
 
-The project follows a structured multi-stage pipeline:
+The project follows a structured multi-stage workflow:
 
 1. Configuration Setup  
 2. Data Ingestion  
@@ -24,146 +31,296 @@ The project follows a structured multi-stage pipeline:
 
 ---
 
-## Project Structure
-project/ │ 
-├── config/ 
-│   └── 00_config.R               # Global settings and file paths 
-│ 
-├── scripts/                      # All scripts for the pipeline
-│   ├── run_pipeline.R            # Master pipeline controller (run entire workflow)
-│   ├── 01_ingest.R               # Load raw data 
-│   ├── 02_diagnose.R             # Data quality checks 
-│   ├── 03_clean.R                # Data cleaning & standardisation 
-│   ├── 04_dictionary.R           # Data dictionary creation 
-│   ├── 05_impute.R               # Missing value handling 
-│   ├── 06_export.R               # Export to multiple formats 
-│   
-├── reports/                      # R markdown report(s) and outputs
-│   └── 07_report.Rmd             # Automated analysis report 
-│ 
-├── data/ 
-│   ├── raw/                      # Original unprocessed data
-│   ├── interim/                  # Intermediate dataset during processing
-│   └── processed/                # Final cleaned dataset ready for analysis
-│ 
-├── outputs/                      # Generated outputs(tables, files, charts)
-│   ├── logs/                     # Pipeline logs and diagnostic outputs
-│   ├── missing_summary.csv 
-│   ├── data_dictionary.csv 
-│   ├── near_duplicate_names.csv 
-│   
-└── exported datasets │ 
+# Project Structure
+
+```text
+project/
+│
+├── config/
+│   └── 00_config.R
+│       # Global settings and file paths
+│
+├── scripts/
+│   ├── run_pipeline.R
+│   │   # Master pipeline controller
+│   │
+│   ├── 01_ingest.R
+│   │   # Load raw data
+│   │
+│   ├── 02_diagnose.R
+│   │   # Data quality checks
+│   │
+│   ├── 03_cleaning.R
+│   │   # Data cleaning and standardisation
+│   │
+│   ├── 04_impute.R
+│   │   # Missing value handling
+│   │
+│   ├── 05_dictionary.R
+│   │   # Data dictionary generation
+│   │
+│   └── 06_export.R
+│       # Export cleaned datasets
+│
+├── reports/
+│   ├── 07_report.Rmd
+│   │   # Automated reporting script
+│   │
+│   └── 07_report.docx
+│       # Rendered report output
+│
+├── data/
+│   ├── raw/
+│   │   # Original unprocessed dataset
+│   │
+│   ├── interim/
+│   │   # Intermediate datasets
+│   │
+│   └── processed/
+│       # Final cleaned datasets
+│
+├── outputs/
+│   ├── logs/
+│   │   # Pipeline logs and diagnostics
+│   │
+│   ├── missing_summary.csv
+│   ├── near_duplicate_names.csv
+│   ├── duplicate_summary.csv
+│   ├── imputation_summary.csv
+│   └── data_dictionary.csv
+│
 └── README.md
+```
 
 ---
 
-## How to Run the Project
+# How to Run the Project
 
-### Option 1: Full Automated Pipeline (Recommended)
+## Option 1: Full Automated Pipeline (Recommended)
 
-Run the entire workflow using:
+Run the complete workflow using:
 
 ```r
 source("scripts/run_pipeline.R")
 ```
-This executes all stages in the correct order: configuration → ingestion → diagnostics → cleaning → imputation → export → report generation.
 
-Option 2: Manual Execution (Step-by-Step)
-Run stages individually:
+This executes all stages in the correct order:
 
-Run configuration (if required):
-R
+1. Configuration  
+2. Ingestion  
+3. Diagnostics  
+4. Cleaning  
+5. Imputation  
+6. Dictionary Generation  
+7. Export  
+8. Report Rendering  
+
+---
+
+## Option 2: Manual Execution (Step-by-Step)
+
+### Load Configuration
+
+```r
 source("config/00_config.R")
+```
 
-Data ingestion:
-R
+### Data Ingestion
+
+```r
 source("scripts/01_ingest.R")
+```
 
-Diagnostics:
-R
+### Diagnostics
+
+```r
 source("scripts/02_diagnose.R")
+```
 
-Cleaning:
-R
-source("scripts/03_clean.R")
+### Cleaning
 
-Imputation:
-R
+```r
+source("scripts/03_cleaning.R")
+```
+
+### Imputation
+
+```r
 source("scripts/04_impute.R")
+```
 
-Data dictionary generation:
-R
+### Data Dictionary Generation
+
+```r
 source("scripts/05_dictionary.R")
+```
 
-Export:
-R
+### Export
+
+```r
 source("scripts/06_export.R")
+```
 
-Generate report:
-R
+### Generate Report
+
+```r
 rmarkdown::render("reports/07_report.Rmd")
+```
 
-Key Processing Steps
+---
 
-Data Cleaning
-Standardised patient names (lowercase, punctuation removed)
-Normalised categorical variables (Gender, Condition, Medication)
-Parsed multiple date formats into standard Date type
-Cleaned phone numbers (digits only)
-Converted age values (including text → numeric)
-Removed duplicates using Patient Name + Visit Date
+# Key Processing Steps
 
-Data Quality Diagnostics
-Missing value analysis (before cleaning)
-Duplicate detection
-Near-duplicate patient name detection (string distance method)
-Categorical consistency checks
-Visual missingness analysis
+## Data Cleaning
 
-Imputation
-Age missing values imputed using median value
+The cleaning stage performs:
 
-Export Formats
-The final dataset is exported in multiple formats:
-.rds (R native format)
-.csv
-.xlsx (including data dictionary)
-.sav (SPSS)
-.dta (Stata)
+- patient name standardisation:
+  - lowercase conversion,
+  - punctuation removal,
+  - whitespace trimming
 
-Outputs Generated
-Missing value reports
-Unique category summaries
-Near-duplicate name detection file
-Data dictionary
-Cleaned dataset in multiple formats
-Automated Word report
+- categorical normalisation:
+  - Gender,
+  - Condition,
+  - Medication
 
-Tools & Libraries Used
-R Packages
-tidyverse (dplyr, ggplot2, stringr)
-readr
-lubridate
-stringdist
-naniar
-visdat
-reshape2
-rmarkdown
-knitr
-haven
-openxlsx
+- date parsing from multiple formats into standard date objects
 
-Development Tools
-R
-RStudio
-Git & GitHub
-here (for reproducible file paths)
+- phone number cleaning:
+  - removal of non-digit characters,
+  - conversion of blanks to missing values
 
-Limitations
-Some missing values remain in non-critical fields
-Median imputation may reduce variability in age distribution
-Name matching may not capture all real-world duplicates
+- age cleaning:
+  - text-to-numeric conversion,
+  - conversion of `"nan"` values to proper missing values
 
-Conclusion
-This pipeline successfully automates the full lifecycle of healthcare data cleaning and preparation, producing a structured, analysis-ready dataset with supporting documentation and reporting outputs.
-The system is designed for reproducibility, scalability, and transparency in data processing workflows.
+- duplicate patient visit resolution using:
+  - Patient Name
+  - Visit Date
+
+---
+
+## Data Quality Diagnostics
+
+The diagnostics stage includes:
+
+- missing value analysis
+- duplicate detection
+- near-duplicate patient name detection
+- categorical consistency checks
+- visual missingness analysis
+
+---
+
+## Imputation
+
+Missing values in the Age variable are handled using:
+
+- median imputation
+
+The pipeline also stores:
+- original Age values,
+- imputation flags,
+- imputation summaries for reporting.
+
+---
+
+# Export Formats
+
+The final cleaned dataset is exported in multiple formats:
+
+- `.rds`
+- `.csv`
+- `.xlsx`
+- `.sav` (SPSS)
+- `.dta` (Stata)
+
+---
+
+# Outputs Generated
+
+The pipeline generates:
+
+- cleaned datasets
+- missing value summaries
+- duplicate summaries
+- imputation summaries
+- near-duplicate detection outputs
+- data dictionary
+- automated Word report
+
+---
+
+# Tools and Libraries Used
+
+## R Packages
+
+- tidyverse
+  - dplyr
+  - ggplot2
+  - stringr
+
+- readr
+- lubridate
+- stringdist
+- naniar
+- visdat
+- reshape2
+- rmarkdown
+- knitr
+- haven
+- openxlsx
+- here
+
+---
+
+## Development Tools
+
+- R
+- RStudio
+- Git
+- GitHub
+
+---
+
+# Reproducibility Features
+
+The project incorporates several reproducibility practices:
+
+- modular script structure
+- configuration-driven file paths
+- use of `here()` for portability
+- single-entry pipeline execution
+- automated reporting
+- exported audit summaries
+- intermediate dataset preservation
+
+---
+
+# Limitations
+
+Some limitations remain within the dataset and cleaning process:
+
+- some missing values remain in non-critical variables
+- median imputation may reduce variability in Age
+- near-duplicate name detection may not capture all real-world duplicate cases
+- some inconsistencies may persist due to real-world data entry issues
+
+---
+
+# Conclusion
+
+This project successfully automates the full healthcare data cleaning lifecycle using a structured and reproducible pipeline.
+
+The system produces:
+- analysis-ready datasets,
+- supporting documentation,
+- audit summaries,
+- and automated reporting outputs.
+
+The pipeline is designed to support:
+- transparency,
+- reproducibility,
+- scalability,
+- and efficient healthcare data preparation workflows.
