@@ -44,5 +44,3 @@ Near duplicate pairs: 0
 
 
 --- Creating Missingness Plot ---
-null device 
-          1 
