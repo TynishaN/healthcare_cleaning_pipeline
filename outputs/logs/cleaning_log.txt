@@ -1,0 +1,52 @@
+
+===== DATA CLEANING =====
+
+Rows entering cleaning: 1000
+Columns entering cleaning: 10
+--- STEP 1: PATIENT IDENTIFIER CONSISTENCY ---
+
+Patient names standardised.
+
+--- STEP 2: CATEGORICAL NORMALISATION ---
+
+Gender and medication categories standardised.
+
+--- STEP 3: CONDITION NORMALISATION ---
+
+Condition values normalised.
+
+--- STEP 4: DATE PARSING ---
+
+Visit dates parsed successfully.
+
+--- STEP 5: PHONE STANDARDISATION ---
+
+Phone numbers cleaned.
+
+--- STEP 6: AGE CLEANING ---
+
+Age values cleaned and converted to numeric.
+
+--- STEP 7: NEAR-DUPLICATE DETECTION ---
+
+Possible near-duplicate names detected: 0
+Near-duplicate names exported.
+
+--- STEP 8: RESOLVE IDENTITY CONFLICTS ---
+
+--- STEP 9: REMOVE DUPLICATE VISITS ---
+
+Duplicate visits removed: 950
+--- STEP 10: REMOVE EXACT DUPLICATES ---
+
+Exact duplicates removed: 0
+Rows after deduplication: 50
+Cleaning audit log created.
+
+Duplicate summary exported.
+
+Validation checks completed.
+
+Rows after cleaning: 50
+Columns after cleaning: 10
+Cleaning completed successfully.

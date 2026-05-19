@@ -74,7 +74,19 @@ for (d in dirs) {
 diagnostic_log_file <- here(
   "outputs",
   "logs",
-  "diagnostics_log.txt"
+  "diagnostic_log.txt"
+)
+
+cleaning_log_file <- here(
+  "outputs",
+  "logs",
+  "cleaning_log.txt"
+)
+
+imputation_log_file <- here(
+  "outputs",
+  "logs",
+  "imputation_log.txt"
 )
 
 # -----------------------------

@@ -4,12 +4,16 @@
 #
 # Purpose:
 # Handles missing values in the cleaned dataset
-# including median imputation and imputation
-# tracking for reporting purposes.
+# including:
+# - Median imputation
+# - Imputation tracking
+# - Validation checks
+# - Imputation summary export
 # ==========================================================
 
 library(here)
 library(dplyr)
+library(tibble)
 
 # ==========================================================
 # LOAD CONFIGURATION
@@ -40,20 +44,48 @@ cat(
   nrow(data_clean)
 )
 
+cat(
+  "\nColumns entering imputation:",
+  ncol(data_clean)
+)
+
+# ==========================================================
+# START LOGGING
+# ==========================================================
+
+sink(imputation_log_file)
+
+cat("\n===== DATA IMPUTATION =====\n")
+
+cat(
+  "\nRows entering imputation:",
+  nrow(data_clean)
+)
+
+cat(
+  "\nColumns entering imputation:",
+  ncol(data_clean)
+)
+
 # ==========================================================
 # STEP 1: PRESERVE ORIGINAL AGE VALUES
 # ==========================================================
 
-# Store original Age variable before imputation
-# for reporting and comparison purposes
+cat("\n--- STEP 1: PRESERVE ORIGINAL AGE VALUES ---\n")
+
+# Store original Age values before imputation
 
 data_clean$Age_Original <- data_clean$Age
+
+cat("\nOriginal Age values preserved.\n")
 
 # ==========================================================
 # STEP 2: AGE IMPUTATION (MEDIAN)
 # ==========================================================
 
-# Calculate median age excluding missing values
+cat("\n--- STEP 2: AGE IMPUTATION ---\n")
+
+# Calculate median excluding missing values
 
 median_age <- median(
   data_clean$Age,
@@ -65,25 +97,39 @@ median_age <- median(
 data_clean$Age_Imputed_Flag <-
   is.na(data_clean$Age)
 
-# Replace missing ages with median age
+# Count missing values before imputation
+
+missing_age_before <- sum(
+  is.na(data_clean$Age)
+)
+
+# Replace missing Age values
 
 data_clean$Age[
   is.na(data_clean$Age)
 ] <- median_age
 
+# Count imputed values
+
+values_imputed <- sum(
+  data_clean$Age_Imputed_Flag
+)
+
 cat(
-  "\nMedian age used for imputation:",
+  "\nMedian age used:",
   median_age
 )
 
 cat(
-  "\nNumber of Age values imputed:",
-  sum(data_clean$Age_Imputed_Flag)
+  "\nAge values imputed:",
+  values_imputed
 )
 
 # ==========================================================
 # STEP 3: VALIDATION CHECKS
 # ==========================================================
+
+cat("\n--- STEP 3: VALIDATION CHECKS ---\n")
 
 # Ensure no missing Age values remain
 
@@ -94,7 +140,7 @@ if(any(is.na(data_clean$Age))) {
   )
 }
 
-# Ensure Age values are numeric
+# Ensure Age is numeric
 
 if(!is.numeric(data_clean$Age)) {
   
@@ -103,7 +149,7 @@ if(!is.numeric(data_clean$Age)) {
   )
 }
 
-# Check for impossible age values
+# Check for impossible ages
 
 if(any(
   data_clean$Age < 0,
@@ -111,13 +157,29 @@ if(any(
 )) {
   
   warning(
-    "Negative Age values detected after imputation."
+    "Negative Age values detected."
   )
 }
+
+# Check for unrealistic ages
+
+if(any(
+  data_clean$Age > 120,
+  na.rm = TRUE
+)) {
+  
+  warning(
+    "Age values above 120 detected."
+  )
+}
+
+cat("\nValidation checks completed.\n")
 
 # ==========================================================
 # STEP 4: IMPUTATION SUMMARY EXPORT
 # ==========================================================
+
+cat("\n--- STEP 4: EXPORT IMPUTATION SUMMARY ---\n")
 
 imputation_summary <- tibble(
   
@@ -125,10 +187,17 @@ imputation_summary <- tibble(
   
   method = "Median Imputation",
   
-  median_used = median_age,
+  missing_before_imputation =
+    missing_age_before,
   
   values_imputed =
-    sum(data_clean$Age_Imputed_Flag)
+    values_imputed,
+  
+  median_used =
+    median_age,
+  
+  missing_after_imputation =
+    sum(is.na(data_clean$Age))
 )
 
 write.csv(
@@ -139,6 +208,8 @@ write.csv(
   ),
   row.names = FALSE
 )
+
+cat("\nImputation summary exported.\n")
 
 # ==========================================================
 # SAVE FINAL CLEANED DATA
@@ -156,5 +227,18 @@ cat(
   "\nRows after imputation:",
   nrow(data_clean)
 )
+
+cat(
+  "\nColumns after imputation:",
+  ncol(data_clean)
+)
+
+cat("\nFinal cleaned dataset saved.\n")
+
+# ==========================================================
+# STOP LOGGING
+# ==========================================================
+
+sink()
 
 cat("\n--- IMPUTATION STAGE COMPLETED ---\n")

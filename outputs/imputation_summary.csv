@@ -1,2 +1,2 @@
-"variable","method","median_used","values_imputed"
-"Age","Median Imputation",40,11
+"variable","method","missing_before_imputation","values_imputed","median_used","missing_after_imputation"
+"Age","Median Imputation",11,11,40,0

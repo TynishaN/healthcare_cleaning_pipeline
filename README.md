@@ -36,58 +36,55 @@ The project follows a structured multi-stage workflow:
 ```text
 project/
 │
+├── run_pipeline.R
+│   # Master pipeline controller (single entry point)
+│
 ├── config/
 │   └── 00_config.R
-│       # Global settings and file paths
 │
 ├── scripts/
-│   ├── run_pipeline.R
-│   │   # Master pipeline controller
-│   │
 │   ├── 01_ingest.R
-│   │   # Load raw data
-│   │
 │   ├── 02_diagnose.R
-│   │   # Data quality checks
-│   │
-│   ├── 03_cleaning.R
-│   │   # Data cleaning and standardisation
-│   │
+│   ├── 03_clean.R
 │   ├── 04_impute.R
-│   │   # Missing value handling
-│   │
 │   ├── 05_dictionary.R
-│   │   # Data dictionary generation
-│   │
 │   └── 06_export.R
-│       # Export cleaned datasets
 │
 ├── reports/
 │   ├── 07_report.Rmd
-│   │   # Automated reporting script
-│   │
-│   └── 07_report.docx
-│       # Rendered report output
+│   ├── 07_report.docx
+│   ├── Weekly_Report_Week1.docx
+│   ├── Weekly_Report_Week2.docx
+│   └── Weekly_Report_Week3.docx
+│
+├── presentation/
+│   └── healthcare_pipeline_presentation.pptx
 │
 ├── data/
 │   ├── raw/
-│   │   # Original unprocessed dataset
-│   │
 │   ├── interim/
-│   │   # Intermediate datasets
-│   │
 │   └── processed/
-│       # Final cleaned datasets
 │
 ├── outputs/
 │   ├── logs/
-│   │   # Pipeline logs and diagnostics
+│   │   ├── diagnostic_log.txt
+│   │   ├── cleaning_log.txt
+│   │   └── imputation_log.txt
+│   │
+│   ├── data_cleaned.xlsx
+│   ├── data_cleaned.sav
+│   ├── data_cleaned.dta
+│   ├── data_cleaned.rds
 │   │
 │   ├── missing_summary.csv
-│   ├── near_duplicate_names.csv
 │   ├── duplicate_summary.csv
 │   ├── imputation_summary.csv
-│   └── data_dictionary.csv
+│   ├── data_dictionary.csv
+│   ├── diagnosis_unique_values.csv
+│   ├── gender_unique_values.csv
+│   ├── unique_patient_names.csv
+│   ├── near_duplicate_names.csv
+│   └── missingness_plot.png
 │
 └── README.md
 ```

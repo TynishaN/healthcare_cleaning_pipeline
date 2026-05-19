@@ -1,0 +1,24 @@
+
+===== DATA IMPUTATION =====
+
+Rows entering imputation: 50
+Columns entering imputation: 10
+--- STEP 1: PRESERVE ORIGINAL AGE VALUES ---
+
+Original Age values preserved.
+
+--- STEP 2: AGE IMPUTATION ---
+
+Median age used: 40
+Age values imputed: 11
+--- STEP 3: VALIDATION CHECKS ---
+
+Validation checks completed.
+
+--- STEP 4: EXPORT IMPUTATION SUMMARY ---
+
+Imputation summary exported.
+
+Rows after imputation: 50
+Columns after imputation: 12
+Final cleaned dataset saved.
